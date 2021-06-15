@@ -1,0 +1,743 @@
+<html>
+
+
+ServisController.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using SatisTakip.Models;
+using SatisTakip.ViewModel;
+
+namespace SatisTakip.Controllers
+{
+    public class ServisController :ApiController
+    {
+
+SatisTakipDBEntitiesdb = new SatisTakipDBEntities();
+SonucModelsonuc = new SonucModel();
+
+        #region Kategori
+        [HttpGet]
+        [Route("api/kategoriliste")]
+        public List<KategoriModel>KategoriListe()
+        {
+            List<KategoriModel>liste = db.Kategori.Select(x => new KategoriModel()
+            {
+kategoriId = x.kategoriId,
+EtkinlikKategorisi = x.EtkinlikKategorisi
+            }).ToList();
+
+            return liste;
+        }
+
+        [HttpGet]
+        [Route("api/kategoribyid/{kategoriId}")]
+        public KategoriModelKategoriById(string kategoriId)
+        {
+KategoriModelkayit = db.Kategori.Where(s =>s.kategoriId == kategoriId).Select(x => new KategoriModel()
+            {
+kategoriId = x.kategoriId,
+EtkinlikKategorisi = x.EtkinlikKategorisi
+            }).SingleOrDefault();
+
+            return kayit;
+        }
+
+
+        [HttpPost]
+        [Route("api/kategoriekle")]
+        public SonucModelKategoriEkle(KategoriModel model)
+        {
+            if (db.Kategori.Count(s =>s.kategoriEtkinlikKategorisi == model.EtkinlikKategorisi) > 0)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "GirilenKategoriKayıtlıdır!";
+                return sonuc;
+            }
+
+Kategori yeni = new Kategori();
+yeni.kategoriId = Guid.NewGuid().ToString();
+yeni.EtkinlikKategorisi= model.EtkinlikKategorisi;
+db.Kategori.Add(yeni);
+db.SaveChanges();
+sonuc.islem = true;
+sonuc.mesaj = "KategoriEklendi";
+            return sonuc;
+        }
+
+        [HttpPut]
+        [Route("api/kategoriduzenle")]
+        public SonucModelKategoriDuzenle(KategoriModel model)
+        {
+Kategorikayit = db.Kategori.Where(s =>s.kategoriId == model.kategoriId).SingleOrDefault();
+
+            if (kayit == null)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "KayıtBulunamadı!";
+                return sonuc;
+            }
+
+kayit.EtkinlikKategorisi = model.EtkinlikKategorisi;
+db.SaveChanges();
+
+sonuc.islem = true;
+sonuc.mesaj = "KategoriDüzenlendi";
+
+            return sonuc;
+        }
+
+        [HttpDelete]
+        [Route("api/kategorisil/{kategoriId}")]
+        public SonucModelDersSil(string kategoriId)
+        {
+Kategorikayit = db.Kategori.Where(s =>s.kategoriId == kategoriId).SingleOrDefault();
+
+            if (kayit == null)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "KayıtBulunamadı!";
+                return sonuc;
+            }
+
+            if (db.Satis.Count(s => s.satisKategoriId == kategoriId) > 0)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "KategoriyeKayıtlıSatışOlduğuİçinKategoriSilinemez!";
+                return sonuc;
+            }
+
+
+db.Kategori.Remove(kayit);
+db.SaveChanges();
+sonuc.islem = true;
+sonuc.mesaj = "KategoriBaşarıylaSilindi";
+            return sonuc;
+        }
+
+        [HttpGet]
+        [Route("api/Satisliste")]
+        public List<SatisModel>SatisListe()
+        {
+            List<SatisModel>liste = db.Satis.Select(x => new SatisModel()
+            {
+satisId = x.satisId,
+etkinlikAd = x.etkinlikAd,
+uyeAd = x.uyeAd,
+
+            }).ToList();
+
+            return liste;
+        }
+
+        [HttpGet]
+        [Route("api/satisbyid/{satisId}")]
+        public SatisModelSatisById(string satisId)
+        {
+SatisModelkayit = db.Satis.Where(s => s.satisId == satisId).Select(x => new SatisModel()
+            {
+satisId = x.satisId,
+etkinlikAd = x.etkinlikAd,
+uyeAd= x.uyeAd,
+
+            }).SingleOrDefault();
+
+            return kayit;
+        }
+
+
+        [HttpPost]
+        [Route("api/satisekle")]
+        public SonucModelSatisEkle(SatisModel model)
+        {
+            if (db.Satis.Count(s => s.etkinlikAd == model.v) > 0)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "GirilenEtkinlikKayıtlıdır!";
+                return sonuc;
+            }
+
+Satis yeni = new Satis();
+            yeni.satisId = Guid.NewGuid().ToString();
+            yeni.etkinlikAd = model.etkinlikAd;
+            yeni.uyeAd = model.uyeAd;
+
+            db.Satis.Add(yeni);
+db.SaveChanges();
+sonuc.islem = true;
+sonuc.mesaj = "EtkinlikBaşarıylaEklendi";
+            return sonuc;
+        }
+
+        [HttpPut]
+        [Route("api/satisduzenle")]
+        public SonucModelSatisDuzenle(SatisModel model)
+        {
+Satiskayit = db.Satis.Where(s => s.satisId == model.satisId).SingleOrDefault();
+
+            if (kayit == null)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "KayıtBulunamadı!";
+                return sonuc;
+            }
+
+kayit.etkinlikAd = model.etkinlikAd;
+kayit.uyeAd = model.uyeAd;
+kayit.satisFiyat = model.satisFiyat;
+kayit.satisKategoriId = model.satisKategoriId;
+kayit.satisResim = model.satisResim;
+db.SaveChanges();
+
+sonuc.islem = true;
+sonuc.mesaj = "ÜrünDüzenlendi";
+
+            return sonuc;
+        }
+
+        [HttpDelete]
+        [Route("api/satissil/{satisId}")]
+        public SonucModelSatisSil(string satisId)
+        {
+Satiskayit = db.Satis.Where(s => s.satisId == satisId).SingleOrDefault();
+
+            if (kayit == null)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "KayıtBulunamadı!";
+                return sonuc;
+            }
+
+            if (db.Satis.Count(s =>s.satissatisId == satisId) > 0)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "Satışşuansiparişteolduğuiçinsilemezsin!";
+                return sonuc;
+            }
+
+
+            db.Satis.Remove(kayit);
+db.SaveChanges();
+sonuc.islem = true;
+sonuc.mesaj = “SatışSilindi";
+            return sonuc;
+        }
+
+
+        [HttpGet]
+        [Route("api/musteriliste")]
+        public List<MusteriModel>MusteriListe()
+        {
+            List<MusteriModel>liste = db.Musteri.Select(x => new MusteriModel()
+            {
+musteriId = x.musteriId,
+musteriAd = x.musteriAd,
+musteriSoyad = x.musteriSoyad,
+musteriAdres = x.musteriAdres,
+musteriTelefon = x.musteriTelefon
+            }).ToList();
+            return liste;
+        }
+
+
+        [HttpGet]
+        [Route("api/musteribyid/{musteriId}")]
+        public MusteriModelMusteriById(string musteriId)
+        {
+MusteriModelkayit = db.Musteri.Where(s =>s.musteriId == musteriId).Select(x => new OgrenciMusteriModelModel()
+            {
+musteriId = x.musteriId,
+musteriAd = x.musteriAd,
+musteriSoyad = x.musteriSoyad,
+musteriAdres = x.musteriAdres,
+musteriTelefon = x.musteriTelefon
+            }).SingleOrDefault();
+            return kayit;
+        }
+
+        [HttpPost]
+        [Route("api/musteriekle")]
+        public SonucModelMusteriEkle(MusteriModel model)
+        {
+            if (db.Musteri.Count(s =>s.musteriTelefon == model.musteriTelefon) > 0)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "GirilenMüşteriKayıtlıdır!";
+                return sonuc;
+            }
+
+Musteri yeni = new Musteri();
+yeni.musteriId = Guid.NewGuid().ToString();
+yeni.musteriAd = model.musteriAd;
+yeni.musteriSoyad = model.musteriSoyad;
+yeni.musteriAdres = model.musteriAdres;
+yeni.musteriTelefon = model.musteriTelefon;
+db.Musteri.Add(yeni);
+db.SaveChanges();
+sonuc.islem = true;
+sonuc.mesaj = "MüşteriEklendi";
+            return sonuc;
+        }
+
+
+        [HttpPut]
+        [Route("api/musteriduzenle")]
+        public SonucModelMusteriDuzenle(MusteriModel model)
+        {
+Musterikayit = db.Musteri.Where(s =>s.musteriId == model.musteriId).SingleOrDefault();
+            if (kayit == null)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "KayıtBulunamadı!";
+                return sonuc;
+            }
+
+kayit.musteriAd = model.musteriAd;
+kayit.musteriSoyad = model.musteriSoyad;
+kayit.musteriAdres = model.musteriAdres;
+kayit.musteriTelefon = model.musteriTelefon;
+
+db.SaveChanges();
+sonuc.islem = true;
+sonuc.mesaj = "MüşteriDüzenlendi";
+            return sonuc;
+        }
+
+        [HttpDelete]
+        [Route("api/musterisil/{musteriId}")]
+        public SonucModelOgrenciSil(string musteriId)
+        {
+Musterikayit = db.Musteri.Where(s =>s.musteriId == musteriId).SingleOrDefault();
+            if (kayit == null)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "KayıtBulunamadı!";
+                return sonuc;
+            }
+
+            if (db.Siparis.Count(s =>s.siparisMusteriId == musteriId) > 0)
+            {
+sonuc.islem = false;
+sonuc.mesaj = "MüşterininSiparişiolduğuiçinsilemezsin!";
+                return sonuc;
+            }
+
+db.Musteri.Remove(kayit);
+db.SaveChanges();
+sonuc.islem = true;
+sonuc.mesaj = "MüşteriSilindi";
+            return sonuc;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<\html>
